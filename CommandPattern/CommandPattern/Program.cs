@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Text;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Collections.Generic;
 
 namespace CommandPattern
 {
@@ -70,22 +73,50 @@ namespace CommandPattern
             #endregion
 
             #region remote control with multiple undo states
+            //RemoteControlWithUndo remote = new RemoteControlWithUndo();
+            //CeilingFan fan = new CeilingFan("livingroom");
+            //CeilingFanHighSpeedCommand ceilingFanHigh = new CeilingFanHighSpeedCommand(fan);
+            //CeilingFanLowSpeedCommand ceilingFanLow = new CeilingFanLowSpeedCommand(fan);
+            //CeilingFanOffSpeedCommand ceilingFanOff = new CeilingFanOffSpeedCommand(fan);
+            //remote.SetCommand(0, ceilingFanHigh, ceilingFanOff);
+            //remote.SetCommand(1, ceilingFanLow, ceilingFanOff);
+
+            //remote.OnButtonWasPushed(0);
+            //remote.OffButtonWasPushed(0);
+            //Console.WriteLine(remote.ToString());
+            //remote.UndoButtonWasPushed();
+
+            //remote.OnButtonWasPushed(1);
+            //Console.WriteLine(remote.ToString());
+            //remote.UndoButtonWasPushed();
+            #endregion
+
+            #region remote control with macro commands
             RemoteControlWithUndo remote = new RemoteControlWithUndo();
+            Light light = new Light("livingroom");
+            Stereo stero = new Stereo("livingroom");
             CeilingFan fan = new CeilingFan("livingroom");
-            CeilingFanHighSpeedCommand ceilingFanHigh = new CeilingFanHighSpeedCommand(fan);
-            CeilingFanLowSpeedCommand ceilingFanLow = new CeilingFanLowSpeedCommand(fan);
-            CeilingFanOffSpeedCommand ceilingFanOff = new CeilingFanOffSpeedCommand(fan);
-            remote.SetCommand(0, ceilingFanHigh, ceilingFanOff);
-            remote.SetCommand(1, ceilingFanLow, ceilingFanOff);
+            LightOnCommand livingLightOn = new LightOnCommand(light);
+            StereoOnWithCDCommand livingStereoOn = new StereoOnWithCDCommand(stero);
+            CeilingFanMediumSpeedCommand livingCeilingMedium = new CeilingFanMediumSpeedCommand(fan);
+            LightOffCommand livingLightOff = new LightOffCommand(light);
+            StereoOffCommand livingStereoOff = new StereoOffCommand(stero);
+            CeilingFanOffSpeedCommand livingCeilingOff = new CeilingFanOffSpeedCommand(fan);
 
+            Command[] macroOnCmd = { livingLightOn, livingStereoOn, livingCeilingMedium };
+            Command[] macroOffCmd = { livingLightOff, livingStereoOff, livingCeilingOff };
+            MacroCommand macroOn = new MacroCommand(macroOnCmd);
+            MacroCommand macroOff = new MacroCommand(macroOffCmd);
+
+            remote.SetCommand(0, macroOn, macroOff);
+
+            Console.WriteLine(remote.ToString());
             remote.OnButtonWasPushed(0);
+            Console.WriteLine("------push macro on-----");
             remote.OffButtonWasPushed(0);
-            Console.WriteLine(remote.ToString());
-            remote.UndoButtonWasPushed();
+            Console.WriteLine("------push macro off----");
 
-            remote.OnButtonWasPushed(1);
-            Console.WriteLine(remote.ToString());
-            remote.UndoButtonWasPushed();
+           
             #endregion
 
             Console.Read();
@@ -507,6 +538,31 @@ namespace CommandPattern
                     break;
             }
 
+        }
+    }
+
+    public class MacroCommand : Command
+    {
+        Command[] commands;
+
+        public MacroCommand(Command[] commands)
+        {
+            this.commands = commands;
+        }
+
+        public void Execute()
+        {
+            commands.ToList().ForEach((command) => {
+                command.Execute();
+            });   
+        }
+
+        public void Undo()
+        {
+            commands.ToList().ForEach((command) =>
+            {
+                command.Undo();
+            });
         }
     }
 
