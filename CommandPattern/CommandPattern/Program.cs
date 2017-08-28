@@ -69,6 +69,25 @@ namespace CommandPattern
 
             #endregion
 
+            #region remote control with multiple undo states
+            RemoteControlWithUndo remote = new RemoteControlWithUndo();
+            CeilingFan fan = new CeilingFan("livingroom");
+            CeilingFanHighSpeedCommand ceilingFanHigh = new CeilingFanHighSpeedCommand(fan);
+            CeilingFanLowSpeedCommand ceilingFanLow = new CeilingFanLowSpeedCommand(fan);
+            CeilingFanOffSpeedCommand ceilingFanOff = new CeilingFanOffSpeedCommand(fan);
+            remote.SetCommand(0, ceilingFanHigh, ceilingFanOff);
+            remote.SetCommand(1, ceilingFanLow, ceilingFanOff);
+
+            remote.OnButtonWasPushed(0);
+            remote.OffButtonWasPushed(0);
+            Console.WriteLine(remote.ToString());
+            remote.UndoButtonWasPushed();
+
+            remote.OnButtonWasPushed(1);
+            Console.WriteLine(remote.ToString());
+            remote.UndoButtonWasPushed();
+            #endregion
+
             Console.Read();
         }
     }
@@ -171,21 +190,25 @@ namespace CommandPattern
         public void High()
         {
             speed = Speed.High;
+            Console.WriteLine(location + " ceiling fan is on " + speed.ToString());
         }
 
         public void Medium()
         {
             speed = Speed.Medium;
+            Console.WriteLine(location + " ceiling fan is on " + speed.ToString());
         }
 
         public void Low()
         {
             speed = Speed.Low;
+            Console.WriteLine(location + " ceiling fan is on " + speed.ToString());
         }
 
         public void Off()
         {
             speed = Speed.Off;
+            Console.WriteLine(location + " ceiling fan is Off");
         }
 
         public Speed GetSpeed()
@@ -350,6 +373,123 @@ namespace CommandPattern
         public void Undo()
         {
             switch (prevSpeed) {
+                case Speed.High:
+                    fan.High();
+                    break;
+                case Speed.Low:
+                    fan.Low();
+                    break;
+                case Speed.Medium:
+                    fan.Medium();
+                    break;
+                case Speed.Off:
+                    fan.Off();
+                    break;
+                default:
+                    fan.Off();
+                    break;
+            }
+
+        }
+    }
+
+    public class CeilingFanLowSpeedCommand : Command
+    {
+        CeilingFan fan;
+        Speed prevSpeed;
+
+        public CeilingFanLowSpeedCommand(CeilingFan ceilingFan)
+        {
+            fan = ceilingFan;
+        }
+        public void Execute()
+        {
+            prevSpeed = fan.GetSpeed();
+            fan.Low();
+        }
+
+        public void Undo()
+        {
+            switch (prevSpeed)
+            {
+                case Speed.High:
+                    fan.High();
+                    break;
+                case Speed.Low:
+                    fan.Low();
+                    break;
+                case Speed.Medium:
+                    fan.Medium();
+                    break;
+                case Speed.Off:
+                    fan.Off();
+                    break;
+                default:
+                    fan.Off();
+                    break;
+            }
+
+        }
+    }
+
+    public class CeilingFanMediumSpeedCommand : Command
+    {
+        CeilingFan fan;
+        Speed prevSpeed;
+
+        public CeilingFanMediumSpeedCommand(CeilingFan ceilingFan)
+        {
+            fan = ceilingFan;
+        }
+        public void Execute()
+        {
+            prevSpeed = fan.GetSpeed();
+            fan.Medium();
+        }
+
+        public void Undo()
+        {
+            switch (prevSpeed)
+            {
+                case Speed.High:
+                    fan.High();
+                    break;
+                case Speed.Low:
+                    fan.Low();
+                    break;
+                case Speed.Medium:
+                    fan.Medium();
+                    break;
+                case Speed.Off:
+                    fan.Off();
+                    break;
+                default:
+                    fan.Off();
+                    break;
+            }
+
+        }
+    }
+
+    public class CeilingFanOffSpeedCommand : Command
+    {
+        CeilingFan fan;
+        Speed prevSpeed;
+
+        public CeilingFanOffSpeedCommand(CeilingFan ceilingFan)
+        {
+            fan = ceilingFan;
+        }
+        public void Execute()
+        {
+            prevSpeed = fan.GetSpeed();
+            fan.Off();
+        }
+
+        public void Undo()
+        {
+            switch (prevSpeed)
+            {
                 case Speed.High:
                     fan.High();
                     break;
